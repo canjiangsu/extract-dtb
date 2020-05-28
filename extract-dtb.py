@@ -41,6 +41,8 @@ def safe_output_path(output_dir, dtb_filename_new):
         raise RuntimeException("DTB file path points outside of extraction"
                                " directory: " + dtb_filename_new)
     ret = os.path.join(args.output_dir, dtb_filename_new)
+    while os.path.exists(ret):
+        ret += "1"
     os.makedirs(os.path.dirname(ret), exist_ok=True)
     return ret
 
@@ -70,6 +72,9 @@ def split(args):
             dtb_filename = get_dtb_filename(n)
             filepath = os.path.join(args.output_dir, dtb_filename)
             dump_file(filepath, content[begin_pos:pos])
+            if n == 0:
+                dtimgpath = os.path.join(args.output_dir, "dt.img")
+                dump_file(dtimgpath, content[pos:])
             if n > 0:
                 dtb_name = get_dtb_model(filepath)
                 if dtb_name:
@@ -104,7 +109,7 @@ def get_dtb_filename(n, suffix=""):
     if n == 0:
         return "00_kernel"
     n = str(n).zfill(2)
-    basename = "{0}_dtbdump".format(n)
+    basename = "00_dtbdump"
     if suffix != "":
         basename += "_" + suffix.replace(" ", "_")
     return basename + ".dtb"
